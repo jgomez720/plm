@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KCL File Viewer</title>
+  <!-- Prism.js CSS for Dark Theme -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/themes/prism-okaidia.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="viewer-styles.css">
+</head>
+<body>
+  <!-- Back to Dashboard Button -->
+  <button id="back-button" onclick="window.location.href='index.html'">Back to Dashboard</button>
+
+  <h1 id="file-title"></h1>
+
+  <!-- Mass Information -->
+  <div class="mass-info" id="mass-info"></div>
+
+  <!-- Author Information -->
+  <div class="author-info" id="author-info"></div>
+
+  <!-- Snapshot Image -->
+  <img id="snapshot-image" class="snapshot-image" alt="KCL Snapshot" />
+
+  <!-- Code Viewer with Prism.js -->
+  <pre><code id="file-content" class="language-javascript"></code></pre>
+
+  <!-- Prism.js JavaScript for Syntax Highlighting -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/prism.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.25.0/components/prism-javascript.min.js"></script>
+
+  <script>
+    // Retrieve the stored file content, snapshot, and mass from localStorage
+    const fileContent = localStorage.getItem('kclFileContent');
+    const snapshotPath = localStorage.getItem('kclFileSnapshot');
+    const fileMass = localStorage.getItem('kclFileMass');
+    const fileName = localStorage.getItem('kclFileName');
+    const fileAuthor = localStorage.getItem('kclFileAuthor');
+
+    document.getElementById('file-title').innerText = fileName;
+    document.getElementById('file-content').textContent = fileContent; // Load the code content
+    document.getElementById('snapshot-image').src = snapshotPath;
+    document.getElementById('mass-info').textContent = `Mass: ${fileMass}`;
+    document.getElementById('author-info').textContent = `Author: ${fileAuthor}`;
+  </script>
+</body>
+</html>

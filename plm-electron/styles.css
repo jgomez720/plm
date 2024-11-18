@@ -1,0 +1,162 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 20px;
+}
+
+h1, h2 {
+  color: #333;
+}
+
+.container {
+  display: flex;
+  height: 100vh;
+}
+
+.file-list {
+  width: 60%;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.file-list h2 {
+  margin-top: 0;
+}
+
+#files {
+  list-style-type: none;
+  padding: 0;
+}
+
+.file-display {
+  width: 40%;
+  padding: 20px;
+  background-color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.file-display h2 {
+  margin-top: 0;
+}
+
+.image-container {
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #ddd;
+  background-color: #f9f9f9;
+  margin-bottom: 20px;
+}
+
+.snapshot-image {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.mass-info {
+  font-size: 18px;
+  color: #333;
+}
+
+/* File item styling */
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+  position: relative;
+}
+
+.file-item .file-name {
+  flex-grow: 1; /* Make the file name take up the remaining space */
+}
+
+.file-row {
+  display: flex;
+  justify-content: space-between; /* Ensures the kabob is on the far right */
+  align-items: center;
+  width: 100%; /* Ensure it takes the full width */
+}
+
+.kebab-menu {
+  cursor: pointer;
+  margin-left: auto; /* Align the kabob to the far right */
+  padding-left: 10px; /* Space between file name and kabob */
+}
+
+
+.file-item:hover {
+  background-color: #f0f0f0;
+}
+
+.ellipsis:hover {
+  color: #888;
+}
+
+#version-list {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+
+#version-list li {
+  cursor: pointer;
+  padding: 5px;
+  background-color: #f0f0f0;
+  margin-bottom: 5px;
+  border-radius: 5px;
+}
+
+#version-list li:hover {
+  background-color: #e0e0e0;
+}
+
+#files li {
+  display: flex;
+  justify-content: space-between; /* Ensure the kabob is on the far right */
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  cursor: pointer;
+}
+
+.ellipsis {
+  font-size: 20px;
+  cursor: pointer;
+  margin-left: auto; /* Ensure the ellipsis is pushed to the right */
+}
+
+.file-item-title {
+  flex-grow: 1; /* Make the file name take up the remaining space */
+}
+
+#files li:hover {
+  background-color: #f0f0f0;
+}
+
+/* Pop-up styling for version selection */
+.version-popup {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  z-index: 1000;
+  width: 200px;
+}
+
+.version-item {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.version-item:hover {
+  background-color: #f0f0f0;
+}

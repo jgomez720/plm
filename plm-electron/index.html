@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KCL Files Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Left side: List of KCL files -->
+    <div class="file-list">
+      <h2>KCL Files</h2>
+      <ul id="files"></ul> <!-- The list of files will be dynamically populated here -->
+    </div>
+
+    <!-- Right side: Display the selected file's screenshot and mass -->
+    <div class="file-display">
+      <h2 id="file-title">Select a KCL file</h2>
+      <div class="image-container">
+        <img id="snapshot-image" class="snapshot-image" alt="KCL Snapshot" style="display:none;" />
+      </div>
+      <div class="mass-info" id="mass-info" style="display:none;">Mass: </div>
+      <div class="author-info" id="author-info" style="display:none;">Author: </div> <!-- New div for author -->
+    </div>
+  </div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

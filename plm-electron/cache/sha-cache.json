@@ -1,0 +1,56 @@
+{
+  "ball-bearing": {
+    "sha": "a14ee07b7f30ee9e37652a6fde227d5f704fca3e",
+    "mass": 0.31,
+    "mass-unit": "lb",
+    "author": "jgomez720"
+  },
+  "bracket": {
+    "sha": "57b0aadf814862ca7ea3f2a87a4c2d6ddaa879f6",
+    "mass": 1.44,
+    "mass-unit": "lb",
+    "author": "jgomez720"
+  },
+  "brake-caliper": {
+    "sha": "0b61f9d6bc2625e49fcf21d10b20c463f8cf9e60",
+    "mass": 6.3,
+    "mass-unit": "kg",
+    "author": "jgomez720"
+  },
+  "flange-with-patterns": {
+    "sha": "40c428acbf61fe82daa94e0bda34a11e1d7a8765",
+    "mass": 3.38,
+    "mass-unit": "lb",
+    "author": "jgomez720"
+  },
+  "french-press": {
+    "sha": "fc55f910de1f3b1449ed7ee24b0eb83bab255f93",
+    "mass": 21,
+    "mass-unit": "lb",
+    "author": "jgomez720"
+  },
+  "gear": {
+    "sha": "02aa3fe0ec20e19721904b2e53306450af7fb38f",
+    "mass": 1.14,
+    "mass-unit": "lb",
+    "author": "jgomez720"
+  },
+  "hex-nut": {
+    "sha": "1d18754d3646c1fb51ba9e3bad7687ce83671eaa",
+    "mass": 0.02,
+    "mass-unit": "lb",
+    "author": "jgomez720"
+  },
+  "lego": {
+    "sha": "c616c6eb5df172e852911b70bbec7518ba345f02",
+    "mass": 91.64,
+    "mass-unit": "lb",
+    "author": "jgomez720"
+  },
+  "lug-nut": {
+    "sha": "a60493e005574dace5752f89ea5c8cb6d3524cee",
+    "mass": 0.15,
+    "mass-unit": "kg",
+    "author": "jgomez720"
+  }
+}
