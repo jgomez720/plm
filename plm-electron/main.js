@@ -2,27 +2,80 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-// GitHub repository information
-const owner = 'jgomez720';
-const repo = 'kcl-files';
-const branch = 'main';
-const token = process.env.GITHUB_TOKEN;
+// Path to store the configuration
+const configPath = path.join(__dirname, 'config.json');
+
+// Check if the configuration file exists
+function getConfig() {
+  if (fs.existsSync(configPath)) {
+    return JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  }
+  return null;
+}
+
+// Save the configuration
+function saveConfig(config) {
+  fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+  console.log('Configuration saved:', config);
+}
+
+// Fetch GitHub configuration
+function getGitHubConfig() {
+  const config = getConfig();
+  if (!config || !config.token || !config.repo) {
+    return null; // Return null if configuration is incomplete
+  }
+  const [owner, repo] = config.repo.split('/');
+  return { token: config.token, owner, repo };
+}
 
 // Ensure cache and screenshots directories exist
 const cacheDir = path.join(__dirname, 'cache');
-const screenshotsDir = path.join(cacheDir, 'screenshots'); // Store cached screenshots in the cache folder
+const screenshotsDir = path.join(cacheDir, 'screenshots');
 const shaCachePath = path.join(cacheDir, 'sha-cache.json');
-const tempDir = path.join(__dirname, 'temp'); // Temporary directory for KCL files
+const tempDir = path.join(__dirname, 'temp');
 
-if (!fs.existsSync(cacheDir)) {
-  fs.mkdirSync(cacheDir);
-}
-if (!fs.existsSync(screenshotsDir)) {
-  fs.mkdirSync(screenshotsDir);
-}
-if (!fs.existsSync(tempDir)) {
-  fs.mkdirSync(tempDir);
-}
+if (!fs.existsSync(cacheDir)) fs.mkdirSync(cacheDir);
+if (!fs.existsSync(screenshotsDir)) fs.mkdirSync(screenshotsDir);
+if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
+
+// Handle IPC events for saving configuration
+ipcMain.handle('save-github-config', async (event, config) => {
+  console.log('save-github-config handler called with:', config);
+  const fetch = (await import('node-fetch')).default;
+
+  try {
+      // Validate token
+      const userResponse = await fetch('https://api.github.com/user', {
+          headers: { Authorization: `Bearer ${config.token}` },
+      });
+
+      if (!userResponse.ok) {
+          throw new Error('Invalid GitHub token.');
+      }
+
+      // Validate repository
+      const [owner, repo] = config.repo.split('/');
+      const repoResponse = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+          headers: { Authorization: `Bearer ${config.token}` },
+      });
+
+      if (!repoResponse.ok) {
+          throw new Error('Repository does not exist or is inaccessible.');
+      }
+
+      // Save valid configuration
+      saveConfig(config);
+      console.log('Configuration saved successfully.');
+      return { success: true, message: 'Configuration saved successfully.' };
+  } catch (error) {
+      console.error('Error during save-github-config:', error.message);
+      return { success: false, message: error.message };
+  }
+});
+
+
+
 
 // Load the SHA cache from JSON file, or create a new one
 function loadShaCache() {
@@ -36,9 +89,20 @@ function loadShaCache() {
 
 // Save the SHA cache back to the JSON file
 function saveShaCache(shaCache) {
-  console.log('Saving SHA cache to sha-cache.json');
-  fs.writeFileSync(shaCachePath, JSON.stringify(shaCache, null, 2)); // Save formatted JSON
+  fs.writeFileSync(shaCachePath, JSON.stringify(shaCache, null, 2));
+  console.log('SHA cache saved.');
 }
+
+// Fetch GitHub configuration
+function getGitHubConfig() {
+  const config = getConfig();
+  if (!config || !config.token || !config.repo) {
+    return null; // Safely return null if configuration is incomplete
+  }
+  const [owner, repo] = config.repo.split('/');
+  return { token: config.token, owner, repo };
+}
+
 
 // Function to extract material-density and unit from the KCL file content
 function extractMaterialDensityAndUnit(fileContent) {
@@ -134,17 +198,28 @@ async function calculateMass(fileContent, density, densityUnit, fileName) {
 // Function to fetch KCL files and their SHAs from GitHub
 async function fetchKclFilesAndShaFromGitHub() {
   const fetch = (await import('node-fetch')).default;
-  const shaCache = loadShaCache(); // Load existing SHA cache
+  
+  let config;
+  try {
+    config = getGitHubConfig();
+    if (!config) {
+      throw new Error('GitHub configuration is missing or incomplete.');
+    }
+  } catch (error) {
+    console.error('Error fetching GitHub configuration:', error.message);
+    throw error; // Let the caller handle the redirection
+  }
 
-  // Define apiUrl to get KCL files from the GitHub repository
-  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`;
+  const { token, owner, repo } = config;
+  const shaCache = loadShaCache();
+  const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents`;
 
   try {
     const response = await fetch(apiUrl, {
       headers: {
         'Accept': 'application/vnd.github.v3+json',
-        'Authorization': `Bearer ${token}`
-      }
+        'Authorization': `Bearer ${token}`,
+      },
     });
 
     if (!response.ok) {
@@ -155,16 +230,15 @@ async function fetchKclFilesAndShaFromGitHub() {
 
     for (const file of files) {
       if (file.name.endsWith('.kcl')) {
-        const remoteFileSha = file.sha; // Get the SHA value from GitHub
-        const fileNameWithoutExt = path.basename(file.name, '.kcl'); // Extract file name without extension
+        const remoteFileSha = file.sha;
+        const fileNameWithoutExt = path.basename(file.name, '.kcl');
 
-        // Fetch the latest commit info for this file
-        const commitUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${file.name}&sha=${branch}&per_page=1`;
+        const commitUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${file.name}&per_page=1`;
         const commitResponse = await fetch(commitUrl, {
           headers: {
             'Accept': 'application/vnd.github.v3+json',
-            'Authorization': `Bearer ${token}`
-          }
+            'Authorization': `Bearer ${token}`,
+          },
         });
 
         if (!commitResponse.ok) {
@@ -174,28 +248,25 @@ async function fetchKclFilesAndShaFromGitHub() {
         const commitData = await commitResponse.json();
         const lastCommitAuthor = commitData[0]?.commit?.author?.name || 'Unknown';
 
-        console.log(`File: ${fileNameWithoutExt}, Author: ${lastCommitAuthor}`);
-
-        // Update the cache with the author
         shaCache[fileNameWithoutExt] = {
           sha: remoteFileSha,
           mass: shaCache[fileNameWithoutExt]?.mass || null,
           'mass-unit': shaCache[fileNameWithoutExt]?.['mass-unit'] || null,
-          author: lastCommitAuthor,  // Add author info to the cache
+          author: lastCommitAuthor,
         };
       }
     }
 
-    saveShaCache(shaCache); // Save the updated SHA cache to the JSON file
-    console.log('KCL files and SHA cache have been updated.');
+    saveShaCache(shaCache);
+    console.log('KCL files and SHA cache updated.');
   } catch (error) {
-    console.error('Error fetching KCL files from GitHub:', error);
+    console.error('Error fetching KCL files from GitHub:', error.message);
+    throw error; // Let the caller handle the redirection
   }
 }
 
-
 // Create the main application window
-async function createWindow() {
+async function createWindow(page = 'index.html') {
   const win = new BrowserWindow({
     width: 800,
     height: 600,
@@ -206,7 +277,7 @@ async function createWindow() {
   });
 
   win.maximize();
-  win.loadFile('index.html');
+  win.loadFile(page);
 
   // Fetch KCL files and their SHA values when the window is ready
   ipcMain.handle('fetch-kcl-files-and-sha', async () => {
@@ -354,7 +425,10 @@ async function createWindow() {
 
   ipcMain.handle('fetch-latest-author', async (event, fileName) => {
     try {
-      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${fileName}.kcl&sha=${branch}&per_page=1`;
+      const { token, owner, repo } = getGitHubConfig(); // Retrieve configuration
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?path=${fileName}.kcl&per_page=1`;
+  
+      const fetch = (await import('node-fetch')).default;
       const response = await fetch(apiUrl, {
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -369,21 +443,28 @@ async function createWindow() {
       const commits = await response.json();
       return commits[0]?.commit?.author?.name || 'Unknown'; // Return the most recent commit author
     } catch (error) {
-      console.error('Error fetching latest author from GitHub:', error);
+      console.error('Error fetching latest author from GitHub:', error.message);
       return 'Unknown';
     }
-  });
+  });  
 }
 
 app.whenReady().then(async () => {
-  // On first run, fetch screenshots from GitHub and check SHAs
-  await fetchKclFilesAndShaFromGitHub();
-  createWindow();
-
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+  try {
+    const config = getGitHubConfig();
+    if (!config) {
+        console.log('Redirecting to setup page: GitHub configuration is missing or incomplete.');
+        await createWindow('setup.html'); // Redirect to setup
+    } else {
+        await fetchKclFilesAndShaFromGitHub();
+        await createWindow('index.html'); // Redirect to dashboard
+    }
+  } catch (error) {
+    console.error('Error during initialization:', error.message);
+    await createWindow('setup.html'); // Redirect to setup on failure
+  }
 });
+
 
 app.on('window-all-closed', () => {
   fs.rm(path.join(__dirname, 'temp'), { recursive: true, force: true }, (err) => {

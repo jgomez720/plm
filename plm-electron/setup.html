@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Repository</title>
+  <link rel="stylesheet" href="viewer-styles.css">
+</head>
+<body>
+  <h1>Setup GitHub Repository</h1>
+  <form id="setup-form">
+    <label for="github-token">GitHub Token:</label><br>
+    <input type="password" id="github-token" required><br><br>
+    <label for="github-repo">Repository (owner/repo):</label><br>
+    <input type="text" id="github-repo" required><br><br>
+    <button type="button" id="save-config-button">Save</button>
+  </form>
+
+  <script>
+    const { ipcRenderer } = require('electron');
+
+    document.getElementById('save-config-button').addEventListener('click', async () => {
+        const token = document.getElementById('github-token').value.trim();
+        const repo = document.getElementById('github-repo').value.trim();
+
+        if (!token || !repo) {
+            alert('Please provide both a GitHub token and a repository.');
+            return;
+        }
+
+        const result = await ipcRenderer.invoke('save-github-config', { token, repo });
+
+        if (result.success) {
+            alert(result.message);
+            window.location.href = 'index.html';
+        } else {
+            alert(`Error: ${result.message}`);
+        }
+    }); 
+
+
+  </script>
+</body>
+</html>
